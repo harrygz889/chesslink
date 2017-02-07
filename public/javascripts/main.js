@@ -1,4 +1,3 @@
-var ChessBoard = require('chessboardjs')
-
-//set up empty board
-var board = ChessBoard('board')
+$(document).ready(function() {
+  var board = ChessBoard('game')
+})
