@@ -1,4 +1,11 @@
+
 $(document).ready(function() {
+
+  var sock = io('http://localhost:5000');
+  sock.on('msg', function(text) {
+    console.log('socket text:', text)
+  });
+
   pgn = ['[Event "Casual Game"]',
        '[Site "Berlin GER"]',
        '[Date "1852.??.??"]',
