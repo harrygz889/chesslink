@@ -4,7 +4,9 @@ var http = require('http');
 
 var app = express();
 let server = http.createServer(app);
-var io = socketio(server)
+var io = socketio(server);
+
+let waitingPlayer;
 
 io.on('connection', onConnection)
 
@@ -25,4 +27,17 @@ function onConnection(socket) {
   socket.emit('msg', 'You have connected!')
 
   socket.on('msg', (text) => io.emit('msg', text))
+
+  if(waitingPlayer) {
+    notifyMatchStarts(socket, waitingPlayer)
+    waitingPlayer = null
+  }
+  else {
+    waitingPlayer = socket
+    socket.emit('msg', 'You are waiting for a second player...')
+  }
+}
+
+function notifyMatchStarts(sockA, sockB) {
+  [sockA, sockB].forEach((sock) => sock.emit('msg', 'Match Start'))
 }
