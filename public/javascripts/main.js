@@ -1,10 +1,23 @@
 
 $(document).ready(function() {
+ //socket.io stuff ***********************************
+  function onMessage(text) {
+    var $el = document.createElement('li')
+    $el.innerHTML = text
+    $("#chat").append($el)
+  }
 
-  var sock = io('http://localhost:5000');
-  sock.on('msg', function(text) {
-    console.log('socket text:', text)
-  });
+  var socket = io('http://localhost:5000');
+  socket.on('msg', onMessage)
+
+  $("#chat-form").on("submit", function(event){
+    var value = $("#chat-input").val()
+    $("#chat-input").val("")
+    socket.emit('msg', value)
+    event.preventDefault()
+  })
+
+  //chess board stuff ***********************************
 
   pgn = ['[Event "Casual Game"]',
        '[Site "Berlin GER"]',
@@ -47,8 +60,11 @@ fens.forEach(fen => console.log(fen));
     return Math.floor(Math.random() * (max - min) + min);
   }
   randomkey = getRandomArbitrary(10, fens.length)
+  // log it
   console.log("randomkey", randomkey)
+
   randomfen = fens[randomkey]
+  //log it
   console.log("randomfen", randomfen)
 
 //Board Creation and rules *****************************

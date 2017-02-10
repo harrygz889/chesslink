@@ -6,9 +6,7 @@ var app = express();
 let server = http.createServer(app);
 var io = socketio(server)
 
-io.on('connection', function(socket) {
-   socket.emit('msg', 'Hello!')
- })
+io.on('connection', onConnection)
 
 
 app.set('port', (process.env.PORT || 5000));
@@ -22,3 +20,9 @@ app.get('/', function(req, res) {
 server.listen(app.get('port'), function() {
   console.log('Node app is running on port', app.get('port'));
 });
+
+function onConnection(socket) {
+  socket.emit('msg', 'You have connected!')
+
+  socket.on('msg', (text) => io.emit('msg', text))
+}
