@@ -7,7 +7,7 @@ $(document).ready(function() {
     $("#chat").append($el)
   }
 
-  var socket = io('http://localhost:5000');
+  var socket = io();
   socket.on('msg', onMessage)
 
   $("#chat-form").on("submit", function(event){
