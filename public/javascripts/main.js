@@ -1,13 +1,14 @@
 
 $(document).ready(function() {
  //socket.io stuff ***********************************
+  var socket = io();
+
   function onMessage(text) {
     var $el = document.createElement('li')
     $el.innerHTML = text
     $("#chat").append($el)
   }
 
-  var socket = io();
   socket.on('msg', onMessage)
 
   $("#chat-form").on("submit", function(event){
@@ -67,9 +68,12 @@ fens.forEach(fen => console.log(fen));
   //log it
   console.log("randomfen", randomfen)
 
+  standardfen = fens[0]
+  console.log('standardfen', standardfen)
+
 //Board Creation and rules *****************************
 var board,
-  game = new Chess(randomfen),
+  game = new Chess(standardfen),
   statusEl = $('#status'),
   fenEl = $('#fen'),
   pgnEl = $('#pgn');
@@ -82,9 +86,19 @@ var onDragStart = function(source, piece, position, orientation) {
       (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
     return false;
   }
+  if ((orientation === 'white' && piece.search(/^w/) === -1) ||
+      (orientation === 'black' && piece.search(/^b/) === -1)) {
+    return false;
+  }
 };
 
 var onDrop = function(source, target) {
+
+  //logging the move
+  console.log('source', source)
+  console.log('target', target)
+
+
   // see if the move is legal
   var move = game.move({
     from: source,
@@ -95,6 +109,7 @@ var onDrop = function(source, target) {
   // illegal move
   if (move === null) return 'snapback';
 
+  socket.emit('move', {source: source, target: target})
   updateStatus();
 };
 
@@ -145,7 +160,20 @@ var cfg = {
   onSnapEnd: onSnapEnd
 };
 board = ChessBoard('board', cfg);
-board.position(randomfen)
+board.position(standardfen)
+
+socket.on('servermove', function(move) {
+  moveString = "" + move.source + "-" + move.target
+  console.log('PlayerMove:', moveString)
+  game.move(moveString, {sloppy: true})
+  board.position(game.fen())
+})
+
+socket.on('changeColor', function() {
+  board.flip()
+})
 
 updateStatus();
+
+
 })

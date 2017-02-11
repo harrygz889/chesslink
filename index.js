@@ -1,10 +1,12 @@
-var express = require('express');
-var socketio = require('socket.io');
-var http = require('http');
+let express = require('express');
+let socketio = require('socket.io');
+let http = require('http');
 
-var app = express();
+let app = express();
 let server = http.createServer(app);
-var io = socketio(server);
+let io = socketio(server);
+let ChessGame = require('./ChessGame');
+
 
 let waitingPlayer;
 
@@ -24,20 +26,21 @@ server.listen(app.get('port'), function() {
 });
 
 function onConnection(socket) {
+
   socket.emit('msg', 'You have connected!')
 
   socket.on('msg', (text) => io.emit('msg', text))
 
+  socket.on('disconnect', () => io.emit('msg', 'Player disconnected'))
+
+  socket.on('move', (data) => console.log('server move data', data))
+
   if(waitingPlayer) {
-    notifyMatchStarts(socket, waitingPlayer)
+    new ChessGame(waitingPlayer, socket)
     waitingPlayer = null
   }
   else {
     waitingPlayer = socket
     socket.emit('msg', 'You are waiting for a second player...')
   }
-}
-
-function notifyMatchStarts(sockA, sockB) {
-  [sockA, sockB].forEach((sock) => sock.emit('msg', 'Match Start'))
 }
