@@ -31,6 +31,7 @@ function onConnection(socket) {
 
   socket.on('msg', (text) => io.emit('msg', text))
 
+  //!!!!!!!!!!!change this to only emit to the other player ***!!!!!!!!!!!!!!!!!!!
   socket.on('disconnect', () => io.emit('msg', 'Player disconnected'))
 
   socket.on('move', (data) => console.log('server move data', data))

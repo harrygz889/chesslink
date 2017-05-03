@@ -1,7 +1,0 @@
-{
-  "name": "Chess App",
-  "description": "A barebones Node.js app using Express 4",
-  "repository": "https://github.com/harrygz889/chessapp.git",
-  "keywords": ["node", "express", "static"],
-  "image": "heroku/nodejs"
-}
