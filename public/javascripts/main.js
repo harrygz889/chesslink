@@ -1,140 +1,107 @@
 
 $(document).ready(function() {
- //socket.io stuff ***********************************
+
+  //TODO:
+  // Refactor with React
+
+  //initialize socket.io
   var socket = io();
 
+  // create and append dom element using JQuery
   function onMessage(text) {
     var $el = document.createElement('li')
     $el.innerHTML = text
     $("#chat").append($el)
   }
 
+  // subscribe to msg with socket.io
   socket.on('msg', onMessage)
 
+  // emit msg and prevent the default form submit behavior
   $("#chat-form").on("submit", function(event){
     var value = $("#chat-input").val()
-    $("#chat-input").val("")
+    $("#chat-input").val("") // reset input element
     socket.emit('msg', value)
     event.preventDefault()
   })
 
-  //chess board stuff ***********************************
+  // initialize new instance of Chess.js (https://github.com/jhlywa/chess.js/blob/master/README.md)
+  var game = new Chess()
 
-  pgn = ['[Event "Casual Game"]',
-       '[Site "Berlin GER"]',
-       '[Date "1852.??.??"]',
-       '[EventDate "?"]',
-       '[Round "?"]',
-       '[Result "1-0"]',
-       '[White "Adolf Anderssen"]',
-       '[Black "Jean Dufresne"]',
-       '[ECO "C52"]',
-       '[WhiteElo "?"]',
-       '[BlackElo "?"]',
-       '[PlyCount "47"]',
-       '',
-       '1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O',
-       'd3 8.Qb3 Qf6 9.e5 Qg6 10.Re1 Nge7 11.Ba3 b5 12.Qxb5 Rb8 13.Qa4',
-       'Bb6 14.Nbd2 Bb7 15.Ne4 Qf5 16.Bxd3 Qh5 17.Nf6+ gxf6 18.exf6',
-       'Rg8 19.Rad1 Qxf3 20.Rxe7+ Nxe7 21.Qxd7+ Kxd7 22.Bf5+ Ke8',
-       '23.Bd7+ Kf8 24.Bxe7# 1-0'];
+  // run when piece is picked up,
+  // these methods are configured according to the chessboard.js specs (https://chessboardjs.com/)
+  var onDragStart = function(source, piece, position, orientation) {
+    // do not pick up pieces if the game is over
+    // only pick up pieces for the side to move
+    if (game.game_over() === true ||
+       (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+       (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+       return false;
+    }
+    // only allows you to pick up pieces of the side nearest you
+    if ((orientation === 'white' && piece.search(/^w/) === -1) ||
+       (orientation === 'black' && piece.search(/^b/) === -1)) {
+       return false;
+    }
+  };
 
+  // runs when piece is released
+  var onDrop = function(source, target) {
 
-const chess1 = new Chess();
-const chess2 = new Chess();
-const startPos = chess2.fen();
-
-chess1.load_pgn(pgn.join('\n'));
-let fens = chess1.history().map(move => {
-  chess2.move(move);
-  return chess2.fen();
-});
-
-//the above technique will not capture the fen of the starting position.  therefore:
-fens = [startPos, ...fens];
-
-//double checking everything
-fens.forEach(fen => console.log(fen));
-
-//logic for getting random fen ***********************
-  function getRandomArbitrary(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
-  }
-  randomkey = getRandomArbitrary(10, fens.length)
-  // log it
-  console.log("randomkey", randomkey)
-
-  randomfen = fens[randomkey]
-  //log it
-  console.log("randomfen", randomfen)
-
-  standardfen = fens[0]
-  console.log('standardfen', standardfen)
-
-//Board Creation and rules *****************************
-var board
-var game = new Chess(standardfen)
-
-// do not pick up pieces if the game is over
-// only pick up pieces for the side to move
-var onDragStart = function(source, piece, position, orientation) {
-  if (game.game_over() === true ||
-      (game.turn() === 'w' && piece.search(/^b/) !== -1) ||
-      (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
-    return false;
-  }
-  if ((orientation === 'white' && piece.search(/^w/) === -1) ||
-      (orientation === 'black' && piece.search(/^b/) === -1)) {
-    return false;
-  }
-};
-
-var onDrop = function(source, target) {
-
-  //logging the move
-  console.log('source', source)
-  console.log('target', target)
+  // logging the move to the chrome console (not the server console)
+    console.log('source', source)
+    console.log('target', target)
 
 
-  // see if the move is legal
-  var move = game.move({
-    from: source,
-    to: target,
-    promotion: 'q' // NOTE: always promote to a queen for example simplicity
-  });
+  // see if the move is legal using chess.js
+    var move = game.move({
+      from: source,
+      to: target,
+      promotion: 'q' // NOTE: always promote to a queen for UI simplicity atm
+    });
 
-  // illegal move
-  if (move === null) return 'snapback';
+    // illegal move because the call to game.move above returned null
+    if (move === null) return 'snapback';
 
-  socket.emit('move', {source: source, target: target})
-};
+    // emit move event via the socket.io instance we created on line 8
+    socket.emit('move', {source: source, target: target})
+  };
 
-// update the board position after the piece snap
-// for castling, en passant, pawn promotion
-var onSnapEnd = function() {
-  board.position(game.fen());
-};
+  // update the board position after the piece snap
+  // for castling, en passant, pawn promotion
+
+  // TODO:
+  // Delete this function, move shouldn't be rendered until the socket emits the move
+  var onSnapEnd = function() {
+    board.position(game.fen());
+  };
 
 
-var cfg = {
-  draggable: true,
-  position: 'start',
-  onDragStart: onDragStart,
-  onDrop: onDrop,
-  onSnapEnd: onSnapEnd
-};
-board = ChessBoard('board', cfg);
-board.position(standardfen)
+  var cfg = {
+    draggable: true,
+    position: 'start',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd
+  };
 
-socket.on('servermove', function(move) {
-  moveString = "" + move.source + "-" + move.target;
-  console.log('PlayerMove:', moveString);
-  game.move(moveString, {sloppy: true});
-  board.position(game.fen());
-})
+  // configure board
+  var board = ChessBoard('board', cfg);
 
-socket.on('changeColor', function() {
-  board.flip()
-})
 
+
+  // create a move string from the source and target of the move object
+  // reflect that move in the game
+  // reflect the new game fen on the board position
+  socket.on('servermove', function(move) {
+    moveString = "" + move.source + "-" + move.target;
+    console.log('PlayerMove:', moveString);
+    game.move(moveString, {sloppy: true});
+    board.position(game.fen());
+  })
+
+  // flip color on board
+  socket.on('changeColor', function() {
+    board.flip()
+  })
 });

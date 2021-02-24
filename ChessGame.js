@@ -1,36 +1,39 @@
 class ChessGame {
-  constructor(sock1, sock2) {
-    this._sock1 = sock1
-    this._sock2 = sock2
-    this._players = [sock1, sock2]
-    this._initSockets()
-    sock2.emit('changeColor')
+  constructor(socket_1, socket_2) {
+    this._white_player = socket_1
+    this._black_player = socket_2
+    this._players = [this._white_player, this._black_player]
+
+    // swap color for _black_player
+    this._black_player.emit('changeColor')
+
+    this._startGame()
   }
 
-  _initSockets() {
-    this._players.forEach((sock, index) => {
-      sock.emit('msg', 'Match Starts')
+  _startGame() {
+    this._players.map ( player => {
+      player.emit('msg', 'Match Starts')
     })
-    //handle move sock1
-    this._sock1.on('move', (move) => {
-      this._sock2.emit('servermove', move)
-      //log it
-      console.log('sock1move', move)
+
+    //handle move for _white_player
+    this._white_player.on('move', move => {
+      this._black_player.emit('servermove', move)
+      console.log('_white_player: ', move)
     })
-    //handle move sock2
-    this._sock2.on('move', (move) => {
-      this._sock1.emit('servermove', move)
-      //log it
-      console.log('sock2move', move)
+    //handle move for _black_player
+    this._black_player.on('move', move => {
+      this._white_player.emit('servermove', move)
+      console.log('_black_player: ', move)
     })
-  }
-  _handleMove1(data) {
-    console.log('handlemove1', data)
-    //this._sock2.emit('move', data)
-  }
-  _handleMove2(data) {
-    console.log('handlemove2', data)
-    //this._sock1.emit('move', data)
+
+    // handle disconnections
+    this._white_player.on('disconnect', () => {
+      this._black_player.emit('msg', 'White disconnected... you win!')
+    })
+
+    this._black_player.on('disconnect', () => {
+      this._white_player.emit('msg', 'Black disconnected... you win!')
+    })
   }
 }
 
