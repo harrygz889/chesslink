@@ -69,9 +69,6 @@ $(document).ready(function() {
 
   // update the board position after the piece snap
   // for castling, en passant, pawn promotion
-
-  // TODO:
-  // Delete this function, move shouldn't be rendered until the socket emits the move
   var onSnapEnd = function() {
     board.position(game.fen());
   };
@@ -93,7 +90,7 @@ $(document).ready(function() {
   // create a move string from the source and target of the move object
   // reflect that move in the game
   // reflect the new game fen on the board position
-  socket.on('servermove', function(move) {
+  socket.on('server-move', function(move) {
     moveString = "" + move.source + "-" + move.target;
     console.log('PlayerMove:', moveString);
     game.move(moveString, {sloppy: true});

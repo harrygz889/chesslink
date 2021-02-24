@@ -7,6 +7,8 @@ let http = require('http');
 let app = express();
 let server = http.createServer(app);
 let io = socketio(server);
+
+// require our ChessGame.js object
 let ChessGame = require('./ChessGame');
 
 // initialize the waiting player variable
@@ -17,6 +19,7 @@ io.on('connection', onConnection)
 
 // set our port to the production port or localhost:5000 if running npm start from the terminal
 app.set('port', (process.env.PORT || 5000));
+// automatically serve files in the public directory
 app.use(express.static(__dirname + '/public'));
 
 // The below runs anytime a request comes into the "/" link ie "chess-whatever.com/"

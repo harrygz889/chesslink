@@ -17,12 +17,12 @@ class ChessGame {
 
     //handle move for _white_player
     this._white_player.on('move', move => {
-      this._black_player.emit('servermove', move)
+      this._black_player.emit('server-move', move)
       console.log('_white_player: ', move)
     })
     //handle move for _black_player
     this._black_player.on('move', move => {
-      this._white_player.emit('servermove', move)
+      this._white_player.emit('server-move', move)
       console.log('_black_player: ', move)
     })
 
