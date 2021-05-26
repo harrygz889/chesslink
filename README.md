@@ -1,1 +1,1 @@
-A basic chess app in early stages of development. 
+Multiplayer chess application built using node.js and socket.io. 
