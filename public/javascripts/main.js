@@ -9,7 +9,7 @@ $(document).ready(function() {
 
   // create and append dom element using JQuery
   function onMessage(text) {
-    var $el = document.createElement('li')
+    let $el = document.createElement('li')
     $el.innerHTML = text
     $("#chat").append($el)
   }
@@ -24,6 +24,29 @@ $(document).ready(function() {
     socket.emit('msg', value)
     event.preventDefault()
   })
+
+  // random ID generation
+  let guid = () => {
+    let s4 = () => {
+        return Math.floor((1 + Math.random()) * 0x10000)
+            .toString(16)
+            .substring(1);
+    }
+    //return id of format 'aaaaaaaa'-'aaaa'-'aaaa'-'aaaa'-'aaaaaaaaaaaa'
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+  }
+
+  // if there is a URL param for gameid then join game..
+  const urlParams = new URLSearchParams(window.location.search);
+  if(urlParams.has('gameid')) {
+    socket.emit('join', urlParams.get('gameid'))
+  }
+  else {
+    // .. otherwise generate one and join
+    socket.emit('join', guid());
+  }
+  
+  
 
   // initialize new instance of Chess.js (https://github.com/jhlywa/chess.js/blob/master/README.md)
   var game = new Chess()

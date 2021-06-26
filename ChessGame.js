@@ -1,7 +1,8 @@
 class ChessGame {
-  constructor(socket_1, socket_2) {
+  constructor(socket_1, socket_2, gameID) {
     this._white_player = socket_1
     this._black_player = socket_2
+    this._gameID = gameID
     this._players = [this._white_player, this._black_player]
 
     // swap color for _black_player
@@ -13,6 +14,7 @@ class ChessGame {
   _startGame() {
     this._players.map ( player => {
       player.emit('msg', 'Match Starts')
+      player.emit('id', this._gameID)
     })
 
     //handle move for _white_player

@@ -19,14 +19,22 @@ io.on('connection', onConnection)
 
 // set our port to the production port or localhost:5000 if running npm start from the terminal
 app.set('port', (process.env.PORT || 5000));
-// automatically serve files in the public directory
-app.use(express.static(__dirname + '/public'));
 
 // The below runs anytime a request comes into the "/" link ie "chess-whatever.com/"
 // send the index.html page containing our client side scripts and board file
-app.get('/', function(req, res) {
-  res.sendFile('index.html');
+
+// need to attatch socket to req object
+app.use('/',function(req, res, next){
+  console.log("A new request received at " + Date.now());
+  next();
 });
+
+app.get('/', function(req, res) {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+// automatically serve files in the public directory
+app.use(express.static(__dirname + '/public'));
 
 // listen for requests on the port
 server.listen(app.get('port'), function() {
@@ -38,19 +46,25 @@ server.listen(app.get('port'), function() {
 function onConnection(socket) {
 
   // tell the player they have connected
-  socket.emit('msg', 'You have connected!')
+  socket.emit('msg', 'Your have connected.')
+
+  // socket joins game room with  unique id
+  socket.on('join', (game_id) => {
+    socket.join(game_id)
+    // send game URL to client
+    socket.emit('msg', 'Your game URL is:')
+    socket.emit('msg', `http://localhost:5000/?gameid=${game_id}`)
+    if(io.sockets.adapter.rooms.get(game_id).size === 2) {
+      var players = io.sockets.adapter.rooms.get(game_id).values();
+
+      player_1 = io.sockets.sockets.get(players.next().value);
+      player_2 = io.sockets.sockets.get(players.next().value);
+      
+      new ChessGame(player_1, player_2, game_id)
+    }
+  })
+
 
   // if the player sends a chat, then emit that to all sockets connected to the server
   socket.on('msg', (text) => io.emit('msg', text))
-
-  // matchmaking code, automatically creates a waiting player if there is none
-  // creates the object exported in ChessGame.js
-  if(waitingPlayer) {
-    new ChessGame(waitingPlayer, socket)
-    waitingPlayer = null
-  }
-  else {
-    waitingPlayer = socket
-    socket.emit('msg', 'You are waiting for a second player...')
-  }
-}
+ }
