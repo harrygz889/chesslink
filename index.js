@@ -53,7 +53,7 @@ function onConnection(socket) {
     socket.join(game_id)
     // send game URL to client
     socket.emit('msg', 'Your game URL is:')
-    socket.emit('msg', `http://localhost:5000/?gameid=${game_id}`)
+    socket.emit('msg', `https://hgz-chessapp.herokuapp.com/?gameid=${game_id}`)
     if(io.sockets.adapter.rooms.get(game_id).size === 2) {
       var players = io.sockets.adapter.rooms.get(game_id).values();
 
