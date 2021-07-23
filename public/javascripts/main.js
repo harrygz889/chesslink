@@ -1,9 +1,6 @@
 
 $(document).ready(function() {
 
-  //TODO:
-  // Refactor with React
-
   //initialize socket.io
   var socket = io();
 
