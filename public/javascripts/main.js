@@ -69,8 +69,8 @@ $(document).ready(function() {
   var onDrop = function(source, target) {
 
   // logging the move to the chrome console (not the server console)
-    console.log('source', source)
-    console.log('target', target)
+    // console.log('source', source)
+    // console.log('target', target)
 
 
   // see if the move is legal using chess.js
@@ -112,7 +112,7 @@ $(document).ready(function() {
   // reflect the new game fen on the board position
   socket.on('server-move', function(move) {
     moveString = "" + move.source + "-" + move.target;
-    console.log('PlayerMove:', moveString);
+    // console.log('PlayerMove:', moveString);
     game.move(moveString, {sloppy: true});
     board.position(game.fen());
   })

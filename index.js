@@ -23,9 +23,7 @@ app.set('port', (process.env.PORT || 5000));
 // The below runs anytime a request comes into the "/" link ie "chess-whatever.com/"
 // send the index.html page containing our client side scripts and board file
 
-// need to attatch socket to req object
 app.use('/',function(req, res, next){
-  console.log("A new request received at " + Date.now());
   next();
 });
 
