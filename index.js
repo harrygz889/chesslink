@@ -46,14 +46,18 @@ server.listen(app.get('port'), function() {
 function onConnection(socket) {
 
   // tell the player they have connected
-  socket.emit('msg', 'Your have connected.')
+  socket.emit('msg', 'You have connected.')
 
   // socket joins game room with  unique id
   socket.on('join', (game_id) => {
     socket.join(game_id)
+    socket.on('msg', (text) => {
+      socket.emit('msg', text)
+      socket.to(game_id).emit('msg', text)
+    })
     // send game URL to client
     socket.emit('msg', 'Your game URL is:')
-    socket.emit('msg', `https://hgz-chessapp.herokuapp.com/?gameid=${game_id}`)
+    socket.emit('msg', `https://chesslink.app/?gameid=${game_id}`)
     if(io.sockets.adapter.rooms.get(game_id).size === 2) {
       var players = io.sockets.adapter.rooms.get(game_id).values();
 
@@ -63,8 +67,4 @@ function onConnection(socket) {
       new ChessGame(player_1, player_2, game_id)
     }
   })
-
-
-  // if the player sends a chat, then emit that to all sockets connected to the server
-  socket.on('msg', (text) => io.emit('msg', text))
  }
